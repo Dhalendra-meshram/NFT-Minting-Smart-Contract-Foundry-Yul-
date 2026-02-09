@@ -71,7 +71,6 @@ The project includes Foundry tests covering:
 
 - Successful public minting
 - Payment validation failures
-- Max supply enforcement
 - Sale state restrictions
 - Ownership correctness
 - Fuzz testing for variable mint amounts
