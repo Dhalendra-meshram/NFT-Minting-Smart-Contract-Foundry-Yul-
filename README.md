@@ -18,7 +18,7 @@ and auditability.
 - Max supply enforcement
 - Reentrancy protection
 - Custom Solidity errors
-- **Yul-optimized minting & payment validation**
+- Yul-optimized minting & payment validation
 - Fully tested with Foundry + fuzzing
 
 ---
@@ -76,14 +76,13 @@ The project includes Foundry tests covering:
 - Ownership correctness
 - Fuzz testing for variable mint amounts
 
-### Run tests
+## Run tests
 ```bash
 forge test
 
 ## Run with gas report
 ```bash
 forge test --gas-report
-
 
 
 ## Foundry
