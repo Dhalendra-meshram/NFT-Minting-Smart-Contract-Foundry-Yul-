@@ -7,17 +7,14 @@ import "solmate/utils/ReentrancyGuard.sol";
 import "merkle/MerkleProof.sol";
 
 contract NftMinting is ERC721, Owned, ReentrancyGuard {
-    
-     // CONSTANTS
-   
+    // CONSTANTS
+
     uint256 public constant MAX_SUPPLY = 20;
     uint256 public constant MINT_PRICE = 0.01 ether;
     uint256 public constant PRESALE_LIMIT = 5;
 
-
     // STORAGES
     bytes32 public immutable MERKLE_ROOT;
-
 
     bool public paused;
     bool public presaleActive;
@@ -28,7 +25,6 @@ contract NftMinting is ERC721, Owned, ReentrancyGuard {
     mapping(address => uint256) public presaleMinted;
     mapping(uint256 => string) public tokenCids;
 
-
     // ERRORS
     error SaleNotActive();
     error InvalidPayment();
@@ -36,15 +32,10 @@ contract NftMinting is ERC721, Owned, ReentrancyGuard {
     error PresaleLimitExceeded();
     error InvalidMerkleProof();
 
-
     // CONSTRUCTOR
-    constructor(bytes32 _merkleRoot)
-        ERC721("NEW NFT", "NNT")
-        Owned(msg.sender)
-    {
+    constructor(bytes32 _merkleRoot) ERC721("NEW NFT", "NNT") Owned(msg.sender) {
         MERKLE_ROOT = _merkleRoot;
     }
-
 
     // SALE TOGGLES
     function togglePresale() external onlyOwner {
@@ -59,40 +50,32 @@ contract NftMinting is ERC721, Owned, ReentrancyGuard {
         paused = value;
     }
 
-
     // PRESALE MINT
-    function presaleMint(
-        uint256 amount,
-        bytes32[] calldata proof,
-        string[] calldata cids
-    ) external payable nonReentrant {
+    function presaleMint(uint256 amount, bytes32[] calldata proof, string[] calldata cids)
+        external
+        payable
+        nonReentrant
+    {
         if (!presaleActive || !publicSaleActive) revert SaleNotActive();
         _verifyMerkle(proof);
 
         uint256 minted = presaleMinted[msg.sender];
-        if (minted + amount > PRESALE_LIMIT)
+        if (minted + amount > PRESALE_LIMIT) {
             revert PresaleLimitExceeded();
+        }
 
         presaleMinted[msg.sender] = minted + amount;
         _mintInternal(amount, cids);
     }
 
-
     // PUBLIC MINT
-    function publicSaleMint(
-        uint256 amount,
-        string[] calldata cids
-    ) external payable nonReentrant {
+    function publicSaleMint(uint256 amount, string[] calldata cids) external payable nonReentrant {
         if (paused || !publicSaleActive) revert SaleNotActive();
         _mintInternal(amount, cids);
     }
 
-
     // INTERNAL MINT (YUL HEAVY)
-    function _mintInternal(
-        uint256 amount,
-        string[] calldata cids
-    ) internal {
+    function _mintInternal(uint256 amount, string[] calldata cids) internal {
         _validatePayment(amount);
 
         assembly {
@@ -105,7 +88,7 @@ contract NftMinting is ERC721, Owned, ReentrancyGuard {
 
         if (cids.length != amount) revert();
 
-        for (uint256 i; i < amount; ) {
+        for (uint256 i; i < amount;) {
             uint256 tokenId;
 
             assembly {
@@ -116,10 +99,11 @@ contract NftMinting is ERC721, Owned, ReentrancyGuard {
             _safeMint(msg.sender, tokenId);
             tokenCids[tokenId] = cids[i];
 
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
     }
-
 
     // PAYMENT VALIDATION (YUL)
     function _validatePayment(uint256 amount) internal view {
@@ -132,18 +116,12 @@ contract NftMinting is ERC721, Owned, ReentrancyGuard {
         }
     }
 
-
     /// MERKLE VERIFICATION
     function _verifyMerkle(bytes32[] calldata proof) internal view {
-        if (
-            !MerkleProof.verify(
-                proof,
-                MERKLE_ROOT,
-                keccak256(abi.encodePacked(msg.sender))
-            )
-        ) revert InvalidMerkleProof();
+        if (!MerkleProof.verify(proof, MERKLE_ROOT, keccak256(abi.encodePacked(msg.sender)))) {
+            revert InvalidMerkleProof();
+        }
     }
-
 
     // VIEWS
     function totalSupply() external view returns (uint256) {
@@ -155,7 +133,6 @@ contract NftMinting is ERC721, Owned, ReentrancyGuard {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-    return tokenCids[tokenId];
-}
-
+        return tokenCids[tokenId];
+    }
 }
